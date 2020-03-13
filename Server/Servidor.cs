@@ -155,24 +155,6 @@ namespace Server
                         serverSocket.BeginSendTo (message, 0, message.Length, SocketFlags.None, epSender, 
                                 new AsyncCallback(OnSend), epSender);                        
                         break;
-                    case Command.Null:
-                        msgReceived.strName = x + "*" + y;
-                        msgReceived.strMessage = pen.Color.ToString();
-                        msgReceived.cmdCommand = Command.Paint;
-
-                        //Colecção de utilizadores no chat
-                        foreach (ClientInfo client in clientList)
-                        {
-                            //utiliza-se o símbolo (   *   ) para separar os nomes
-                            msgToSend.strMessage += client.strName + "*";
-                        }
-
-                        message = msgToSend.ToByte();
-
-                        //Enviar o nome dos utilizadores no chat
-                        serverSocket.BeginSendTo(message, 0, message.Length, SocketFlags.None, epSender,
-                                new AsyncCallback(OnSend), epSender);
-                        break;
                 }
 
                 if (msgToSend.cmdCommand != Command.List)

@@ -56,7 +56,7 @@ namespace Server
             // timerProgBar
             // 
             this.timerProgBar.Enabled = true;
-            this.timerProgBar.Interval = 10000;
+            this.timerProgBar.Interval = 1000;
             this.timerProgBar.Tick += new System.EventHandler(this.timerProgBar_Tick);
             // 
             // Send_Information
