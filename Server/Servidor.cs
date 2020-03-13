@@ -105,8 +105,8 @@ namespace Server
                         //Quando um cliente se liga, é adicionado à lista de 
                         ClientInfo clientInfo = new ClientInfo();
                         clientInfo.endpoint = epSender;      
-                        clientInfo.strName = msgReceived.strName;                        
-
+                        clientInfo.strName = msgReceived.strName;
+                        txtLog.Text += clientInfo.strName + "\r\n";
                         clientList.Add(clientInfo);
                         //Mensagem que vai ser enviada para todos os utilizadores   
                         break;
@@ -184,13 +184,10 @@ namespace Server
                 }
                 if (clientList.Count > 0)
                 {
-                    timerJogo_Ronda.Start();
                     timerProgBar.Start();
                 }
                 else
                 {
-
-                    timerJogo_Ronda.Stop();
                     timerProgBar.Stop();
                 }
             }
@@ -245,7 +242,10 @@ namespace Server
             if (progBar > 0)
                 progBar -= 20;
             else
+            {
                 progBar = 100;
+                Joga();
+            }
         }
         public void OnSend(IAsyncResult ar)
         {
@@ -259,15 +259,9 @@ namespace Server
             }
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            if(clientList.Count > 0)
-                Joga();
-        }
 
         private void timerProgBar_Tick(object sender, EventArgs e)
         {
-            if (clientList.Count > 0)
                 progressBar();
         }
 
