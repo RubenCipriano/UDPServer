@@ -26,18 +26,20 @@ namespace Server
     public partial class Servidor : Form
     {
         //Estrutura com informação de todos os clientes ligados ao servidor
-        struct ClientInfo
+       public struct ClientInfo
         {
+            public int pontos;
             public EndPoint endpoint;   //Socket para o cliente
             public string strName;      //Nome do cliente no Chat
         }
-
+        string[] palavras = { "Banana", "Pepino", "Cenourinha", "Beringela", "Abacate" };
+        string SelectedWord = "";
         //Colecção de todos os clientes no Chat(array do tipo ClientInfo)
         ArrayList clientList;
         public int progBar = 100;
         //Socket principal que aguarda conexões
         Socket serverSocket;
-
+        public int jogadorAnt;
         byte[] byteData = new byte[1024];
 
         public Servidor()
@@ -108,7 +110,24 @@ namespace Server
                         clientInfo.strName = msgReceived.strName;
                         txtLog.Text += clientInfo.strName + "\r\n";
                         clientList.Add(clientInfo);
-                        //Mensagem que vai ser enviada para todos os utilizadores   
+                        //Mensagem que vai ser enviada para todos os utilizadores  
+
+                        msgToSend.cmdCommand = Command.List;
+                        msgToSend.strMessage = "";
+
+                        //Colecção de utilizadores no chat
+                        foreach (ClientInfo client in clientList)
+                        {
+                            //utiliza-se o símbolo (   *   ) para separar os nomes
+                            msgToSend.strMessage += client.strName + " - Pontos: " + client.pontos  + "*";
+                        }
+
+                        message = msgToSend.ToByte();
+                        foreach (ClientInfo client in clientList)
+                        {
+                            serverSocket.BeginSendTo(message, 0, message.Length, SocketFlags.None, client.endpoint,
+                                new AsyncCallback(OnSend), client.endpoint);
+                        }
                         break;
 
                     case Command.Logout:                    
@@ -130,17 +149,39 @@ namespace Server
                         break;
 
                     case Command.Message:
-
-                        //Mensagem que vai ser enviada para todos os utilizadores
-                        msgToSend.strMessage = msgReceived.strName + ": " + msgReceived.strMessage;
+                            //Mensagem que vai ser enviada para todos os utilizadores
+                            msgToSend.strMessage = msgReceived.strName + ": " + msgReceived.strMessage;
+                            msgToSend.cmdCommand = Command.Message;
+                            message = msgToSend.ToByte();
+                            foreach (ClientInfo client in clientList)
+                            {
+                                serverSocket.BeginSendTo(message, 0, message.Length, SocketFlags.None, epSender,
+                                    new AsyncCallback(OnSend), epSender);
+                            }
+                            if (msgReceived.strMessage == SelectedWord)
+                            {
+                                msgToSend.strMessage = msgReceived.strName + ": acertou!";
+                                msgToSend.cmdCommand = Command.Message;
+                                message = msgToSend.ToByte();
+                                foreach (ClientInfo client in clientList)
+                                {
+                                    serverSocket.BeginSendTo(message, 0, message.Length, SocketFlags.None, epSender,
+                                        new AsyncCallback(OnSend), epSender);
+                                }
+                                for (int idx = 0; idx < clientList.Count; idx++)
+                                {
+                                    ClientInfo client = (ClientInfo)clientList[idx];
+                                    client.pontos++;
+                                    if (client.strName == msgReceived.strName)
+                                        clientList[idx] = client;
+                                }
+                        }
                         break;
-
                     case Command.List:
 
                         //Enviar a lista de utilizadores ao novo cliente
                         msgToSend.cmdCommand = Command.List;
-                        msgToSend.strName = null;
-                        msgToSend.strMessage = null;
+                        msgToSend.strMessage = "";
 
                         //Colecção de utilizadores no chat
                         foreach (ClientInfo client in clientList)
@@ -150,10 +191,13 @@ namespace Server
                         }                        
 
                         message = msgToSend.ToByte();
-
+                        foreach(ClientInfo client in clientList)
+                        {
+                            serverSocket.BeginSendTo(message, 0, message.Length, SocketFlags.None, client.endpoint,
+                                new AsyncCallback(OnSend), client.endpoint);
+                        }
                         //Enviar o nome dos utilizadores no chat
-                        serverSocket.BeginSendTo (message, 0, message.Length, SocketFlags.None, epSender, 
-                                new AsyncCallback(OnSend), epSender);                        
+                                               
                         break;
                 }
 
@@ -182,14 +226,11 @@ namespace Server
                     serverSocket.BeginReceiveFrom (byteData, 0, byteData.Length, SocketFlags.None, ref epSender, 
                         new AsyncCallback(OnReceive), epSender);
                 }
-                if (clientList.Count > 0)
-                {
-                    timerProgBar.Start();
-                }
-                else
-                {
+                Atualiza();
+                if (clientList.Count > 0 && SelectedWord == "")
                     timerProgBar.Stop();
-                }
+                else
+                    timerProgBar.Stop();
             }
             catch (Exception ex)
             { 
@@ -199,17 +240,20 @@ namespace Server
         public void Joga()
         {
             int jogador;
+            int palavra;
             Data msgReceived = new Data(byteData);
             Data msgToSend = new Data();
-
+            Random rdn = new Random();
             byte[] message;
-            do
+            if(clientList.Count > 2)
             {
-                Random rdn = new Random();
-                jogador = rdn.Next(clientList.Count);
+                do
+                    jogador = rdn.Next(clientList.Count);
+                while (jogador == jogadorAnt);
             }
-            while (clientList[jogador] == null);
-
+            else
+                jogador = rdn.Next(clientList.Count);
+            jogadorAnt = jogador;
             for(int idx = 0; idx < clientList.Count; idx++)
             {
                 ClientInfo clientInfo = (ClientInfo)clientList[idx];
@@ -223,6 +267,32 @@ namespace Server
                 message = msgToSend.ToByte();
                 serverSocket.BeginSendTo(message, 0, message.Length, SocketFlags.None, clientInfo.endpoint,
                                 new AsyncCallback(OnSend), clientInfo.endpoint);
+            }
+            palavra = rdn.Next(palavras.Length);
+            SelectedWord = palavras[palavra];
+            txtLog.Text += "Palavra: " + SelectedWord;
+        }
+        public void Atualiza()
+        {
+            Data msgReceived = new Data(byteData);
+            Data msgToSend = new Data();
+            byte[] message;
+            msgToSend.cmdCommand = Command.List;
+            msgToSend.strName = msgReceived.strName;
+            msgToSend.strMessage = null;
+
+            //Colecção de utilizadores no c hat
+            foreach (ClientInfo client in clientList)
+            {
+                //utiliza-se o símbolo (   *   ) para separar os nomes
+                msgToSend.strMessage += client.strName + " - Pontos: " + client.pontos + "*";
+            }
+
+            message = msgToSend.ToByte();
+            foreach (ClientInfo client in clientList)
+            {
+                serverSocket.BeginSendTo(message, 0, message.Length, SocketFlags.None, client.endpoint,
+                    new AsyncCallback(OnSend), client.endpoint);
             }
         }
         public void progressBar()
@@ -244,7 +314,6 @@ namespace Server
             else
             {
                 progBar = 100;
-                Joga();
             }
         }
         public void OnSend(IAsyncResult ar)
@@ -262,7 +331,13 @@ namespace Server
 
         private void timerProgBar_Tick(object sender, EventArgs e)
         {
+            if(clientList.Count > 0)
+            {
                 progressBar();
+                if(progBar == 100)
+                    Joga();
+            }
+               
         }
 
         private void Send_Information_Tick(object sender, EventArgs e)
@@ -335,7 +410,7 @@ namespace Server
 
             return result.ToArray();
         }
-
+        public int pontos;
         public string strName;      //Nome do cliente no Chat
         public string strMessage;   //Messagem
         public Command cmdCommand;  //Tipo de comando (login, logout, send message, ...)

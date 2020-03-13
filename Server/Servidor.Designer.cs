@@ -32,7 +32,6 @@ namespace Server
             this.txtLog = new System.Windows.Forms.TextBox();
             this.timerProgBar = new System.Windows.Forms.Timer(this.components);
             this.Send_Information = new System.Windows.Forms.Timer(this.components);
-            this.panel1 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // txtLog
@@ -49,7 +48,7 @@ namespace Server
             // timerProgBar
             // 
             this.timerProgBar.Enabled = true;
-            this.timerProgBar.Interval = 1000;
+            this.timerProgBar.Interval = 10000;
             this.timerProgBar.Tick += new System.EventHandler(this.timerProgBar_Tick);
             // 
             // Send_Information
@@ -58,19 +57,11 @@ namespace Server
             this.Send_Information.Interval = 20;
             this.Send_Information.Tick += new System.EventHandler(this.Send_Information_Tick);
             // 
-            // panel1
-            // 
-            this.panel1.Location = new System.Drawing.Point(287, 13);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(722, 517);
-            this.panel1.TabIndex = 1;
-            // 
             // Servidor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1021, 542);
-            this.Controls.Add(this.panel1);
+            this.ClientSize = new System.Drawing.Size(296, 542);
             this.Controls.Add(this.txtLog);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -88,7 +79,6 @@ namespace Server
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Timer timerProgBar;
         private System.Windows.Forms.Timer Send_Information;
-        private System.Windows.Forms.Panel panel1;
     }
 }
 
