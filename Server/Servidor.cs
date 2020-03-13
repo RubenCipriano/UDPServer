@@ -243,7 +243,7 @@ namespace Server
                             new AsyncCallback(OnSend), clientInfo.endpoint);
             }
             if (progBar > 0)
-                progBar -= 5;
+                progBar -= 20;
             else
                 progBar = 100;
         }
