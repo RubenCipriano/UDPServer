@@ -105,8 +105,8 @@ namespace Server
                         //Quando um cliente se liga, é adicionado à lista de 
                         ClientInfo clientInfo = new ClientInfo();
                         clientInfo.endpoint = epSender;      
-                        clientInfo.strName = msgReceived.strName;                        
-
+                        clientInfo.strName = msgReceived.strName;
+                        txtLog.Text += clientInfo.strName + "\r\n";
                         clientList.Add(clientInfo);
                         //Mensagem que vai ser enviada para todos os utilizadores   
                         break;
@@ -155,24 +155,6 @@ namespace Server
                         serverSocket.BeginSendTo (message, 0, message.Length, SocketFlags.None, epSender, 
                                 new AsyncCallback(OnSend), epSender);                        
                         break;
-                    case Command.Null:
-                        msgReceived.strName = x + "*" + y;
-                        msgReceived.strMessage = pen.Color.ToString();
-                        msgReceived.cmdCommand = Command.Paint;
-
-                        //Colecção de utilizadores no chat
-                        foreach (ClientInfo client in clientList)
-                        {
-                            //utiliza-se o símbolo (   *   ) para separar os nomes
-                            msgToSend.strMessage += client.strName + "*";
-                        }
-
-                        message = msgToSend.ToByte();
-
-                        //Enviar o nome dos utilizadores no chat
-                        serverSocket.BeginSendTo(message, 0, message.Length, SocketFlags.None, epSender,
-                                new AsyncCallback(OnSend), epSender);
-                        break;
                 }
 
                 if (msgToSend.cmdCommand != Command.List)
@@ -202,13 +184,10 @@ namespace Server
                 }
                 if (clientList.Count > 0)
                 {
-                    timerJogo_Ronda.Start();
                     timerProgBar.Start();
                 }
                 else
                 {
-
-                    timerJogo_Ronda.Stop();
                     timerProgBar.Stop();
                 }
             }
@@ -263,7 +242,10 @@ namespace Server
             if (progBar > 0)
                 progBar -= 5;
             else
+            {
                 progBar = 100;
+                Joga();
+            }
         }
         public void OnSend(IAsyncResult ar)
         {
@@ -277,15 +259,9 @@ namespace Server
             }
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            if(clientList.Count > 0)
-                Joga();
-        }
 
         private void timerProgBar_Tick(object sender, EventArgs e)
         {
-            if (clientList.Count > 0)
                 progressBar();
         }
 

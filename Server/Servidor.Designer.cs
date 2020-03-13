@@ -30,7 +30,6 @@ namespace Server
         {
             this.components = new System.ComponentModel.Container();
             this.txtLog = new System.Windows.Forms.TextBox();
-            this.timerJogo_Ronda = new System.Windows.Forms.Timer(this.components);
             this.timerProgBar = new System.Windows.Forms.Timer(this.components);
             this.Send_Information = new System.Windows.Forms.Timer(this.components);
             this.panel1 = new System.Windows.Forms.Panel();
@@ -47,16 +46,10 @@ namespace Server
             this.txtLog.Size = new System.Drawing.Size(267, 518);
             this.txtLog.TabIndex = 0;
             // 
-            // timerJogo_Ronda
-            // 
-            this.timerJogo_Ronda.Enabled = true;
-            this.timerJogo_Ronda.Interval = 20000;
-            this.timerJogo_Ronda.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
             // timerProgBar
             // 
             this.timerProgBar.Enabled = true;
-            this.timerProgBar.Interval = 10000;
+            this.timerProgBar.Interval = 1000;
             this.timerProgBar.Tick += new System.EventHandler(this.timerProgBar_Tick);
             // 
             // Send_Information
@@ -93,7 +86,6 @@ namespace Server
         #endregion
 
         private System.Windows.Forms.TextBox txtLog;
-        private System.Windows.Forms.Timer timerJogo_Ronda;
         private System.Windows.Forms.Timer timerProgBar;
         private System.Windows.Forms.Timer Send_Information;
         private System.Windows.Forms.Panel panel1;
